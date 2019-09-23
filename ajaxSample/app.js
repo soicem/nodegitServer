@@ -1,47 +1,49 @@
 'use strict';
 
-const Git = require('nodegit');
-const cnst = require('./constant');
-const common = require('./common');
+const request = require("request");
+const cheerio = require("cheerio");
+const Git = require("nodegit");
+const cnst = require("./constant");
+const common = require("./common");
 
-var express = require('express')
-var app = express()
-var bodyParser = require('body-parser')
-var cors = require('cors') // add cors for xmlhttprequest error in browser
-var fs = require('fs');
+var express = require("express");
+var app = express();
+var bodyParser = require("body-parser");
+var cors = require("cors") // add cors for xmlhttprequest error in browser
+var fs = require("fs");
 var text = ""
-const nodeCmd = require('node-cmd');
+const nodeCmd = require("node-cmd");
 
 app.listen(3000, function(){
 	console.log("start ! express server on port 3000");
-})
-
-app.use(express.static(__dirname + '/public'))
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended:true}))
-app.use(cors())
-
-app.set('view engine', 'ejs')
-
-//url routing
-app.get('/', function(req, res){
-	console.log('test')
-	res.sendFile(__dirname + "/public/main.html")
-})
-
-app.get('/main', function(req, res){
-	res.sendFile(__dirname + "/public/main.html")
-})
-
-app.post('/email_post', function(req, res){
-    // get : req.param('email')
-    console.log(req.body)
-    //res.send("<h1>welcome !" + req.body.email + "</h1>")
-    res.render('email.ejs', {'code' : req.body.code})
 });
 
-app.post('/ajax_send_email', function(req, res){ 
-    var cmdCommand; 
+app.use(express.static(__dirname + "/public"));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended:true}));
+app.use(cors());
+
+app.set('view engine', "ejs");
+
+//url routing
+app.get("/", function(req, res){
+	console.log("test");
+	res.sendFile(__dirname + "/public/main.html");
+});
+
+app.get("/main", function(req, res){
+	res.sendFile(__dirname + "/public/main.html");
+});
+
+app.post("/email_post", function(req, res){
+    // get : req.param("email");
+    console.log(req.body);
+    //res.send("<h1>welcome !" + req.body.email + "</h1>");
+    res.render("email.ejs", {"code" : req.body.code});
+});
+
+app.post("/ajax_send_email", function(req, res){
+    var cmdCommand;
     console.log(req.body.main);
     let repo;
     let index;
@@ -62,14 +64,14 @@ app.post('/ajax_send_email', function(req, res){
     .then(() => index.writeTree())
     .then((oidResult) => {
         oid = oidResult;
-        return Git.Reference.nameToId(repo, 'HEAD');
+        return Git.Reference.nameToId(repo, "HEAD");
     })
     .then((head) => repo.getCommit(head))
     .then((parent) => {
         let commit_msg = 'BLK commit!';
 
         return repo.createCommit(
-            'HEAD',
+            "HEAD",
             common.get_commiter_sign(cnst),
             common.get_commiter_sign(cnst),
             commit_msg,
@@ -85,10 +87,10 @@ app.post('/ajax_send_email', function(req, res){
 
     Git.Repository.open(cnst.cur_git_path)
         .then((repoResult) => (repoR = repoResult))
-        .then(() => Git.Remote.lookup(repoR, 'origin'))
+        .then(() => Git.Remote.lookup(repoR, "origin"))
         .then((remote) => {
             return remote.push(
-                ['refs/heads/master:refs/heads/master'],
+                ["refs/heads/master:refs/heads/master"],
                 {
                     callbacks: {
                         credentials: (url, userName) => {
@@ -106,4 +108,20 @@ app.post('/ajax_send_email', function(req, res){
             //repoR.free();
         })
         .catch((e) => console.log(e));
+});
+
+app.post("/getBlkFromGitUrl", function (req, res) {
+    request(req.body.url, function (err, resp, body) {
+        console.log("=================");
+        console.time("getBlkFromGitUrl");
+        const $ = cheerio.load(body);
+        const blkText = $("#LC1").text(); //id=LC1 is the text-box containing the content
+        const blk = JSON.parse(blkText);
+        const responseData = {"result": "ok", "output": blk};
+        res.json(responseData);
+        console.log(blkText);
+        console.log("=================");
+        console.timeEnd("getBlkFromGitUrl");
+        console.log("\n\n\n");
+    });
 });
