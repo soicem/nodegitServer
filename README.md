@@ -1,6 +1,7 @@
 # nodegitServer
 
 ## 개요
+ BLK 파일 배포를 위해 git 절차를 수행하는 서버
 
 ## 가이드 
 
