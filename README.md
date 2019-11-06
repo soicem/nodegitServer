@@ -37,3 +37,12 @@
 1. 서버가 위치한 경로에서 nodeJS 명령어를 입력할 수 있는 프로그램(cmd, powershell, git-shell, etc.)을 실행한다.
 
 2. "node app.js"를 입력하여 서버를 실행한다.
+
+## 사용 환경
+
+## 사용 환경
+
+번호 | 환경
+---- | ----
+1 | nodejs 10.15.3(latest)
+2 | npm install 하지말고 그냥 사용
